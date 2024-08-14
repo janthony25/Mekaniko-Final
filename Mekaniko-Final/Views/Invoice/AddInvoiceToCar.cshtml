@@ -1,0 +1,165 @@
+﻿@model Mekaniko_Final.Models.Dto.AddInvoiceToCarDto
+
+<h2>Customer Details</h2>
+<div class="customer-car-details d-flex justify-content-between align-items-center container">
+    <div class="left">
+        <div class="group">
+            <label asp-for="@Model.CustomerName"></label><br />
+            <input asp-for="@Model.CustomerName" disabled />
+        </div>
+        <div class="group">
+            <label asp-for="@Model.CustomerEmail"></label><br />
+            <input asp-for="@Model.CustomerEmail" disabled />
+        </div>
+        <div class="group">
+            <label asp-for="@Model.CustomerNumber"></label><br />
+            <input asp-for="@Model.CustomerNumber" disabled />
+        </div>
+    </div>
+    <div class="right">
+        <input asp-for="@Model.CarId" disabled />
+        <div class="group">
+            <label asp-for="@Model.CarRego"></label><br />
+            <input asp-for="@Model.CarRego" disabled />
+        </div>
+        <div class="group">
+            <label asp-for="@Model.MakeName"></label><br />
+            <input asp-for="@Model.MakeName" disabled />
+        </div>
+        <div class="group">
+            <label asp-for="@Model.CarModel"></label><br />
+            <input asp-for="@Model.CarModel" disabled />
+        </div>
+        <div class="group">
+            <label asp-for="@Model.CarModel"></label><br />
+            <input asp-for="@Model.CarModel" disabled />
+        </div>
+        <div class="group">
+            <label asp-for="@Model.IsPaid"></label><br />
+            <input asp-for="@Model.IsPaid" disabled />
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    <div class="invoice-item-container container">
+        <div class="heading-title-container d-flex justify-content-center align-items-center">
+            <h4 class="heading-title">ITEM LIST</h4>
+        </div>
+        <div id="invoiceItems" class="invoice-items-container flex-column d-flex mt-2">
+            @for (int i = 0; i < Model.InvoiceItems.Count; i++)
+            {
+                <div class="invoice-item d-flex mb-3">
+                    <div class="form-group">
+                        <label asp-for="InvoiceItems[@i].ItemName" class="control-label"></label>
+                        <input asp-for="InvoiceItems[@i].ItemName" class="form-control input" />
+                        <span asp-validation-for="InvoiceItems[@i].ItemName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group ms-4">
+                        <label asp-for="InvoiceItems[@i].Quantity" class="control-label"></label>
+                        <input asp-for="InvoiceItems[@i].Quantity" class="form-control" />
+                        <span asp-validation-for="InvoiceItems[@i].Quantity" class="text-danger"></span>
+                    </div>
+                    <div class="form-group ms-4">
+                        <label asp-for="InvoiceItems[@i].ItemPrice" class="control-label"></label>
+                        <input asp-for="InvoiceItems[@i].ItemPrice" class="form-control" />
+                        <span asp-validation-for="InvoiceItems[@i].ItemPrice" class="text-danger"></span>
+                    </div>
+                    <div class="form-group ms-4">
+                        <label asp-for="InvoiceItems[@i].ItemTotal" class="control-label"></label>
+                        <input asp-for="InvoiceItems[@i].ItemTotal" class="form-control" readonly />
+                        <span asp-validation-for="InvoiceItems[@i].ItemTotal" class="text-danger"></span>
+                    </div>
+                </div>
+            }
+        </div>
+        <button type="button" id="addItemButton" class="btn btn-primary mt-3">Add Item</button>
+    </div>
+
+    <div class="invoice-details d-flex justify-content-between align-items-center container mt-5">
+        <div class="left">
+            <div class="group">
+                <label asp-for="DateAdded"></label><br />
+                <input asp-for="DateAdded" />
+            </div>
+             <div class="group">
+                <label asp-for="DueDate"></label><br />
+                <input asp-for="DueDate" />
+            </div>
+            <div class="group">
+                <label asp-for="IssueName"></label><br />
+                <input asp-for="IssueName" />
+            </div>
+            <div class="group">
+                <label asp-for="PaymentTerm"></label><br />
+                <input asp-for="PaymentTerm" />
+            </div>
+            <div class="group">
+                <label asp-for="Notes"></label><br />
+                <input asp-for="Notes" />
+            </div>
+        </div>
+        <div class="right d-flex justify-content-between align-items-center">
+            <div class="right-left">
+                <div class="group">
+                    <label asp-for="LaborPrice"></label><br />
+                    <input asp-for="LaborPrice" />
+                </div>
+                <div class="group">
+                    <label asp-for="Discount"></label><br />
+                    <input asp-for="Discount" />
+                </div>
+                <div class="group">
+                    <label asp-for="ShippingFee"></label><br />
+                    <input asp-for="ShippingFee" />
+            </div>
+                <div class="group">
+                    <label asp-for="SubTotal"></label><br />
+                    <input asp-for="SubTotal" />
+                </div>
+            </div>
+            <div class="right-right ms-5">
+                <div class="group">
+                    <label asp-for="TotalAmount"></label><br />
+                    <input asp-for="TotalAmount" />
+                </div>
+                <div class="group">
+                    <label asp-for="AmountPaid"></label><br />
+                    <input asp-for="AmountPaid" />
+                </div>
+                <a class="btn btn-primary mt-3">Calculate</a>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-4 ms-2">Submit</button>
+</form>
+
+@section Scripts {
+    <script>
+        let itemIndex = @Model.InvoiceItems.Count;
+
+        document.getElementById('addItemButton').addEventListener('click', function () {
+            const itemTemplate = `
+                                        <div class="invoice-item d-flex mb-3">
+                                            <div class="form-group">
+                                                <label asp-for="InvoiceItems[${itemIndex}].ItemName">Item Name</label>
+                                                <input name="InvoiceItems[${itemIndex}].ItemName" class="form-control input" />
+                                            </div>
+                                            <div class="form-group ms-4">
+                                                <label asp-for="InvoiceItems[${itemIndex}].Quantity">Quantity</label>
+                                                <input name="InvoiceItems[${itemIndex}].Quantity" class="form-control" />
+                                            </div>
+                                            <div class="form-group ms-4">
+                                                <label asp-for="InvoiceItems[${itemIndex}].ItemPrice">Item Price</label>
+                                                <input name="InvoiceItems[${itemIndex}].ItemPrice" class="form-control" />
+                                            </div>
+                                            <div class="form-group ms-4">
+                                                <label asp-for="InvoiceItems[${itemIndex}].ItemTotal">Item Total</label>
+                                                <input name="InvoiceItems[${itemIndex}].ItemTotal" class="form-control" readonly />
+                                            </div>
+                                        </div>`;
+            document.getElementById('invoiceItems').insertAdjacentHTML('beforeend', itemTemplate);
+            itemIndex++;
+        });
+    </script>
+}

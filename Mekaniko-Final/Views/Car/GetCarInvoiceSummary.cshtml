@@ -1,0 +1,105 @@
+﻿@model List<Mekaniko_Final.Models.Dto.GetCarInvoiceSummaryDto>
+
+<h2>Customer Details</h2>
+<div class="customer-car-details d-flex justify-content-between align-items-center container">
+    <div class="left">
+        <div class="group">
+            <label asp-for="@Model[0].CustomerId"></label>
+            <input asp-for="@Model[0].CustomerId" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].CustomerName"></label>
+            <input asp-for="@Model[0].CustomerName" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].CustomerEmail"></label>
+            <input asp-for="@Model[0].CustomerEmail" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].CustomerNumber"></label>
+            <input asp-for="@Model[0].CustomerNumber" />
+        </div>
+    </div>
+    <div class="right">
+        <div class="group">
+            <label asp-for="@Model[0].CarId"></label>
+            <input asp-for="@Model[0].CarId" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].CarRego"></label>
+            <input asp-for="@Model[0].CarRego" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].MakeName"></label>
+            <input asp-for="@Model[0].MakeName" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].CarModel"></label>
+            <input asp-for="@Model[0].CarModel" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].CarYear"></label>
+            <input asp-for="@Model[0].CarYear" />
+        </div>
+        <div class="group">
+            <label asp-for="@Model[0].IsPaid"></label>
+            <input asp-for="@Model[0].IsPaid" />
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-content-center mt-5">
+    <div class="left">
+        <h3>Transactions</h3>
+    </div>
+    <div class="right">
+        <a asp-controller="Invoice" asp-action="AddInvoiceToCar" asp-route-id="@Model[0].CarId" class="btn btn-warning"><i class="bi bi-plus-square-fill"></i> Invoice</a>
+    </div>
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Invoice ID</th>
+            <th>Issue Name</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+            <th>Total Amount</th>
+            <th>Amount Paid</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var invoice in Model)
+        {
+            <tr>
+                <td>@invoice.InvoiceId</td>
+                <td>@invoice.IssueName</td>
+                <td>@invoice.DateAdded</td>
+                <td>@invoice.DueDate</td>
+                <td>@invoice.TotalAmount</td>
+                <td>@invoice.AmountPaid</td>
+                <td>
+                    @if (invoice.IsPaid.HasValue && invoice.IsPaid.Value)
+                    {
+                        <span>Paid</span>
+                    }
+                    else if (invoice.IsPaid.HasValue && !invoice.IsPaid.Value)
+                    {
+                        <span>Not Paid</span>
+                    }
+                    else
+                    {
+                        <span>Unknown</span> <!-- Handle the case where IsPaid is null -->
+                    }
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <a class=""><i class="bi bi-pencil-square"></i></a>
+                        <a class="ms-2"><i class="bi bi-trash3-fill"></i></a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

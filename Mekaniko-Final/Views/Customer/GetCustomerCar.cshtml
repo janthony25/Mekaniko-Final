@@ -1,0 +1,63 @@
+﻿@model Mekaniko_Final.Models.Dto.CustomerDto
+
+<h2>Customer Details</h2>
+<div class="customer-details">
+    <input asp-for="@Model.CustomerId" />
+    <div class="group">
+        <label asp-for="@Model.CustomerName"></label><br />
+        <input asp-for="@Model.CustomerName" />
+    </div
+    <div class="group">
+        <label asp-for="@Model.CustomerEmail"></label><br />
+        <input asp-for="@Model.CustomerEmail" />
+    </div>
+    <div class="group">
+        <label asp-for="@Model.CustomerNumber"></label><br />
+        <input asp-for="@Model.CustomerNumber" />
+    </div>
+</div>
+
+<div class="container d-flex justify-content-between align-items-center mt-5">
+    <div class="left">
+        <h2>Car List</h2>
+    </div>
+    <div class="right">
+        <a class="btn btn-warning"><i class="bi bi-plus-square-fill"></i> Car</a>
+    </div>
+</div>
+
+<table class="table table-striped container">
+    <thead>
+        <tr>
+            <th>Car ID</th>
+            <th>Rego #</th>
+            <th>Car Make</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var car in Model.Car)
+        {
+            <tr>
+               <td>@car.CarId</td>
+               <td>@car.CarRego</td>
+               <td>
+                    @foreach(var make in car.MakeName)
+                    {
+                        <span>@make.MakeName</span>
+                    }
+                </td>
+                <td>@car.CarModel</td>
+                <td>@car.CarYear</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <a asp-controller="Car" asp-action="GetCarInvoiceSummary" asp-route-id="@car.CarId" class=""><i class="bi bi-pencil-square"></i></a>
+                        <a class="ms-2"><i class="bi bi-trash3-fill"></i></a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
