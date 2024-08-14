@@ -43,8 +43,22 @@ namespace Mekaniko_Final.Repository
             // Save changes to Db
             await _data.SaveChangesAsync();
 
+          
 
+            // Add InvoiceItem  
+            var invoiceItem = dto.InvoiceItems.Select(item => new InvoiceItem
+            {
+                ItemName = item.ItemName,
+                Quantity = item.Quantity,
+                ItemPrice = item.ItemPrice,
+                ItemTotal = item.ItemTotal,
+                InvoiceId = invoice.InvoiceId
+            }).ToList();
 
+            // Add Invoice to Db
+            _data.InvoiceItems.AddRange(invoiceItem);
+            // Save changes to Db
+            await _data.SaveChangesAsync();
 
         }
     }

@@ -8,6 +8,7 @@
         public string? CustomerEmail { get; set; }
         public int CarId { get; set; }
         public string CarRego { get; set; }
+        public int MakeId { get; set; }
         public string MakeName { get; set; } // Make Name from CarMake
         public string CarModel { get; set; }
         public string CarYear { get; set; }

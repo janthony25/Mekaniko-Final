@@ -36,5 +36,18 @@ namespace Mekaniko_Final.Controllers
 
             return View(model);
         }
+
+        // POST - Add Invoice to Car
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddInvoiceToCar(AddInvoiceToCarDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _invoiceRepository.AddInvoiceToCarAsync(dto);
+                return RedirectToAction("GetCarInvoiceSummary", "Car", new { id = dto.CarId });
+            }
+            return View(dto);
+        }
     }
 }
