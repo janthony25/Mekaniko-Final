@@ -49,5 +49,52 @@ namespace Mekaniko_Final.Controllers
             }
             return View(dto);
         }
+
+        // GET - Update Invoice Details
+        public async Task<IActionResult> UpdateInvoiceDetails(int id)
+        {
+            var invoiceDetails = await _invoiceRepository.GetInvoiceDetailsByIdAsync(id);
+
+            if (invoiceDetails == null)
+            {
+                return NotFound();
+            }
+
+            var model = new UpdateCarInvoiceDto
+            {
+                InvoiceId = invoiceDetails.InvoiceId,
+                CustomerName = invoiceDetails.CustomerName,
+                CustomerEmail = invoiceDetails.CustomerEmail,
+                CustomerNumber = invoiceDetails.CustomerNumber,
+                CarId = invoiceDetails.CarId,
+                CarRego = invoiceDetails.CarRego,
+                MakeId = invoiceDetails.MakeId,
+                MakeName = invoiceDetails.MakeName,
+                CarModel = invoiceDetails.CarModel,
+                CarYear = invoiceDetails.CarYear,
+                DateAdded = invoiceDetails.DateAdded,
+                DueDate = invoiceDetails.DueDate,
+                IssueName = invoiceDetails.IssueName,
+                PaymentTerm = invoiceDetails.PaymentTerm,
+                Notes = invoiceDetails.Notes,
+                LaborPrice = invoiceDetails.LaborPrice,
+                Discount = invoiceDetails.Discount,
+                ShippingFee = invoiceDetails.ShippingFee,
+                SubTotal = invoiceDetails.SubTotal,
+                TotalAmount = invoiceDetails.TotalAmount,
+                AmountPaid = invoiceDetails.AmountPaid,
+                IsPaid = invoiceDetails.IsPaid,
+                InvoiceItems = invoiceDetails.InvoiceItems.Select(item => new UpdateInvoiceItemDto
+                {
+                    InvoiceItemId = item.InvoiceItemId,
+                    ItemName = item.ItemName,
+                    Quantity = item.Quantity,
+                    ItemPrice = item.ItemPrice,
+                    ItemTotal = item.ItemTotal
+                }).ToList()
+            };
+
+            return View(model);
+        }
     }
 }

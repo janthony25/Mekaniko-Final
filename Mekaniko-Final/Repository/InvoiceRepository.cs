@@ -61,5 +61,58 @@ namespace Mekaniko_Final.Repository
             await _data.SaveChangesAsync();
 
         }
+
+        public async Task<InvoiceDetailsDto> GetInvoiceDetailsByIdAsync(int id)
+        {
+            var invoice = await _data.Invoices
+                .Include(i => i.Car)
+                    .ThenInclude(car => car.Customer)
+                .Include(i => i.Car)
+                    .ThenInclude(car => car.CarMake)
+                        .ThenInclude(cm => cm.Make)
+                .Include(i => i.InvoiceItem)
+                .FirstOrDefaultAsync(i => i.InvoiceId == id);
+
+            if(invoice == null)
+            {
+                throw new ArgumentException("Invalid InvoiceId");
+            }
+
+            var invoiceDetails = new InvoiceDetailsDto
+            {
+                InvoiceId = invoice.InvoiceId,
+                CarId = invoice.Car.CarId,
+                CustomerName = invoice.Car.Customer.CustomerName,
+                CustomerEmail = invoice.Car.Customer.CustomerEmail,
+                CustomerNumber = invoice.Car.Customer.CustomerNumber,
+                CarRego = invoice.Car.CarRego,
+                MakeId = invoice.Car.CarMake.Select(cm => cm.Make.MakeId).FirstOrDefault(),
+                MakeName = invoice.Car.CarMake.Select(cm => cm.Make.MakeName).FirstOrDefault(),
+                CarModel = invoice.Car.CarModel,
+                CarYear = invoice.Car.CarYear,
+                DateAdded = invoice.DateAdded,
+                DueDate = invoice.DueDate,
+                IssueName = invoice.IssueName,
+                PaymentTerm = invoice.PaymentTerm,
+                Notes = invoice.Notes,
+                LaborPrice = invoice.LaborPrice,
+                Discount = invoice.Discount,
+                ShippingFee = invoice.ShippingFee,
+                SubTotal = invoice.SubTotal,
+                IsPaid = invoice.IsPaid,
+                TotalAmount = invoice.TotalAmount,
+                AmountPaid = invoice.AmountPaid,
+                InvoiceItems = invoice.InvoiceItem.Select(item => new UpdateInvoiceItemDto
+                {
+                    InvoiceItemId = item.InvoiceItemId,
+                    ItemName = item.ItemName,
+                    Quantity = item.Quantity,
+                    ItemPrice = item.ItemPrice,
+                    ItemTotal = item.ItemTotal
+                }).ToList()
+            };
+
+            return invoiceDetails;
+        }
     }
 }

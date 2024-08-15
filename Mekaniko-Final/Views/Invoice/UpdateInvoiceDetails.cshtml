@@ -1,0 +1,260 @@
+﻿@model Mekaniko_Final.Models.Dto.UpdateCarInvoiceDto
+
+<h4 class="text-center">Customer Details</h4>
+
+<form asp-action="UpdateInvoiceDetails" method="post" id="invoiceForm">
+    <input type="hidden" asp-for="InvoiceId" />
+    <input type="hidden" asp-for="CarId" />
+
+    <!-- Customer Details -->
+    <div class="customer-car-details d-flex justify-content-between align-items-center container">
+        <div class="left">
+            <div class="group">
+                <label asp-for="CustomerName"></label>
+                <input asp-for="CustomerName" class="form-control" id="CustomerName" readonly />
+            </div>
+            <div class="group">
+                <label asp-for="CustomerEmail"></label>
+                <input asp-for="CustomerEmail" class="form-control" id="CustomerEmail" readonly />
+            </div>
+            <div class="group">
+                <label asp-for="CustomerNumber"></label>
+                <input asp-for="CustomerNumber" class="form-control" id="CustomerNumber" readonly />
+            </div>
+        </div>
+        <div class="right">
+            <input asp-for="CarId" class="form-control" id="CarId" readonly />
+            <div class="group">
+                <label asp-for="CarRego"></label>
+                <input asp-for="CarRego" class="form-control" id="CarRego" readonly />
+            </div>
+            <div class="group">
+                <label asp-for="MakeName"></label>
+                <input asp-for="MakeName" class="form-control" id="MakeName" readonly />
+            </div>
+            <div class="group">
+                <label asp-for="CarModel"></label>
+                <input asp-for="CarModel" class="form-control" id="CarModel" readonly />
+            </div>
+            <div class="group">
+                <label asp-for="CarYear"></label>
+                <input asp-for="CarYear" class="form-control" id="CarYear" readonly />
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Items Section -->
+    <div class="invoice-item-container container">
+        <div class="heading-title-container d-flex justify-content-center align-items-center">
+            <h4 class="heading-title">ITEM LIST</h4>
+        </div>
+        <div id="invoiceItems" class="invoice-items-container flex-column d-flex mt-2"></div>
+        <button type="button" id="addItemButton" class="btn btn-primary mt-3">Add Item</button>
+    </div>
+
+    <!-- Invoice Details -->
+    <div class="invoice-details d-flex justify-content-between align-items-center container mt-5">
+        <div class="left">
+            <input asp-for="InvoiceId" />
+            <div class="group">
+                <label asp-for="DateAdded"></label><br />
+                <input asp-for="DateAdded" class="form-control" id="DateAdded" />
+            </div>
+            <div class="group">
+                <label asp-for="DueDate"></label><br />
+                <input asp-for="DueDate" class="form-control" id="DueDate" />
+            </div>
+            <div class="group">
+                <label asp-for="IssueName"></label><br />
+                <input asp-for="IssueName" class="form-control" id="IssueName" />
+                <span asp-validation-for="IssueName" class="text-danger"></span>
+            </div>
+            <div class="group">
+                <label asp-for="PaymentTerm"></label><br />
+                <input asp-for="PaymentTerm" class="form-control" id="PaymentTerm" />
+            </div>
+            <div class="group">
+                <label asp-for="Notes"></label><br />
+                <textarea asp-for="Notes" class="form-control" id="Notes"></textarea>
+            </div>
+        </div>
+        <div class="right d-flex justify-content-between align-items-center">
+            <div class="right-left">
+                <div class="group">
+                    <label asp-for="LaborPrice"></label><br />
+                    <input asp-for="LaborPrice" class="form-control" id="LaborPrice" />
+                </div>
+                <div class="group">
+                    <label asp-for="Discount"></label><br />
+                    <input asp-for="Discount" class="form-control" id="Discount" />
+                </div>
+                <div class="group">
+                    <label asp-for="ShippingFee"></label><br />
+                    <input asp-for="ShippingFee" class="form-control" id="ShippingFee" />
+                </div>
+                <div class="group">
+                    <label asp-for="SubTotal"></label><br />
+                    <input asp-for="SubTotal" class="form-control" id="SubTotal" readonly />
+                </div>
+            </div>
+            <div class="right-right ms-5">
+                <div class="group" style="display:none;">
+                    <label asp-for="@Model.IsPaid"></label><br />
+                    <input asp-for="@Model.IsPaid" class="form-control" id="IsPaid" readonly />
+                </div>
+                <div class="group">
+                    <label>Payment Status</label><br />
+                    <input type="text" class="form-control" id="PaymentStatus" readonly />
+                </div>
+                <div class="group">
+                    <label asp-for="TotalAmount"></label><br />
+                    <input asp-for="TotalAmount" class="form-control" id="TotalAmount" readonly />
+                </div>
+                <div class="group">
+                    <label asp-for="AmountPaid"></label><br />
+                    <input asp-for="AmountPaid" class="form-control" id="AmountPaid" />
+                </div>
+                <button type="button" id="calculateButton" class="btn btn-primary mt-3">Calculate</button>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-5">Submit</button>
+</form>
+
+@section Scripts {
+    <script>
+        let itemIndex = @Model.InvoiceItems.Count;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const items = @Html.Raw(Json.Serialize(Model.InvoiceItems));
+            console.log(items); // Debugging: Print items to console
+            populateInvoiceItems(items);
+        });
+
+        function populateInvoiceItems(items) {
+            items.forEach((item, index) => {
+                addItem(item, index);
+            });
+        }
+
+        document.getElementById('addItemButton').addEventListener('click', function () {
+            addItem(null);
+        });
+
+        document.getElementById('calculateButton').addEventListener('click', function () {
+            calculateTotals();
+        });
+
+        function addItem(item, index) {
+            index = index !== undefined ? index : itemIndex;
+            const itemName = item && item.itemName !== null ? item.itemName : '';
+            const quantity = item && item.quantity !== null ? item.quantity : 0;
+            const itemPrice = item && item.itemPrice !== null ? item.itemPrice : 0;
+            const itemTotal = item && item.itemTotal !== null ? item.itemTotal : 0;
+
+            const itemTemplate = `
+                        <div class="invoice-item d-flex mb-3">
+                            <div class="form-group">
+                                <label for="InvoiceItems_${index}__ItemName">Item Name</label>
+                                <input name="InvoiceItems[${index}].ItemName" id="InvoiceItems_${index}__ItemName" class="form-control input" value="${itemName}" required />
+                                <span class="text-danger" data-valmsg-for="InvoiceItems[${index}].ItemName"></span>
+                            </div>
+                            <div class="form-group ms-4">
+                                <label for="InvoiceItems_${index}__Quantity">Quantity</label>
+                                <input name="InvoiceItems[${index}].Quantity" id="InvoiceItems_${index}__Quantity" class="form-control" type="number" value="${quantity}" required />
+                                <span class="text-danger" data-valmsg-for="InvoiceItems[${index}].Quantity"></span>
+                            </div>
+                            <div class="form-group ms-4">
+                                <label for="InvoiceItems_${index}__ItemPrice">Item Price</label>
+                                <input name="InvoiceItems[${index}].ItemPrice" id="InvoiceItems_${index}__ItemPrice" class="form-control" type="number" step="0.01" value="${itemPrice}" required />
+                                <span class="text-danger" data-valmsg-for="InvoiceItems[${index}].ItemPrice"></span>
+                            </div>
+                            <div class="form-group ms-4">
+                                <label for="InvoiceItems_${index}__ItemTotal">Item Total</label>
+                                <input name="InvoiceItems[${index}].ItemTotal" id="InvoiceItems_${index}__ItemTotal" class="form-control" value="${itemTotal}" readonly />
+                                <span class="text-danger" data-valmsg-for="InvoiceItems[${index}].ItemTotal"></span>
+                            </div>
+                        </div>`;
+            document.getElementById('invoiceItems').insertAdjacentHTML('beforeend', itemTemplate);
+            itemIndex++;
+        }
+
+        function calculateTotals() {
+            let subTotal = 0;
+            let validationPassed = true;
+
+            // Calculate ItemTotal for each item and validate fields
+            document.querySelectorAll('.invoice-item').forEach(function (item, index) {
+                const quantity = parseFloat(item.querySelector(`#InvoiceItems_${index}__Quantity`).value) || 0;
+                const price = parseFloat(item.querySelector(`#InvoiceItems_${index}__ItemPrice`).value) || 0;
+                const itemName = item.querySelector(`#InvoiceItems_${index}__ItemName`).value;
+
+                // Validate fields
+                if (!itemName) {
+                    validationPassed = false;
+                    document.querySelector(`#InvoiceItems_${index}__ItemName`).nextElementSibling.textContent = "Item Name is required";
+                } else {
+                    document.querySelector(`#InvoiceItems_${index}__ItemName`).nextElementSibling.textContent = "";
+                }
+
+                if (quantity <= 0) {
+                    validationPassed = false;
+                    document.querySelector(`#InvoiceItems_${index}__Quantity`).nextElementSibling.textContent = "Quantity is required";
+                } else {
+                    document.querySelector(`#InvoiceItems_${index}__Quantity`).nextElementSibling.textContent = "";
+                }
+
+                if (price <= 0) {
+                    validationPassed = false;
+                    document.querySelector(`#InvoiceItems_${index}__ItemPrice`).nextElementSibling.textContent = "Item Price is required";
+                } else {
+                    document.querySelector(`#InvoiceItems_${index}__ItemPrice`).nextElementSibling.textContent = "";
+                }
+
+                const itemTotal = quantity * price;
+                item.querySelector(`#InvoiceItems_${index}__ItemTotal`).value = itemTotal.toFixed(2);
+                subTotal += itemTotal;
+            });
+
+            if (!validationPassed) {
+                alert("Please check the items.");
+                return;
+            }
+
+            // Add Labor Price and Shipping Fee to SubTotal
+            const laborPrice = parseFloat(document.getElementById('LaborPrice').value) || 0;
+            const shippingFee = parseFloat(document.getElementById('ShippingFee').value) || 0;
+            subTotal += laborPrice + shippingFee;
+
+            // Update SubTotal field
+            document.getElementById('SubTotal').value = subTotal.toFixed(2);
+
+            // Calculate TotalAmount
+            const discount = parseFloat(document.getElementById('Discount').value) || 0;
+            const totalAmount = subTotal - discount;
+
+            // Update TotalAmount field
+            document.getElementById('TotalAmount').value = totalAmount.toFixed(2);
+
+            // Check if AmountPaid equals TotalAmount
+            const amountPaid = parseFloat(document.getElementById('AmountPaid').value) || 0;
+            const isPaid = amountPaid === totalAmount;
+
+            // Set IsPaid value (hidden)
+            document.getElementById('IsPaid').value = isPaid ? "True" : "False";
+
+            // Set Payment Status display field
+            document.getElementById('PaymentStatus').value = isPaid ? "Paid" : "Not Paid";
+        }
+
+        // Prevent form submission if IssueName is empty
+        document.getElementById('invoiceForm').addEventListener('submit', function (event) {
+            const issueName = document.getElementById('IssueName').value;
+            if (!issueName) {
+                event.preventDefault();
+                alert("Issue Name is required. Please fill it in before submitting.");
+            }
+        });
+    </script>
+}
