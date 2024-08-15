@@ -2,7 +2,7 @@
 
 <h2>Customer Details</h2>
 
-<form method="post">
+<form method="post" id="invoiceForm">
     <div class="customer-car-details d-flex justify-content-between align-items-center container">
         <div class="left">
             <div class="group">
@@ -51,22 +51,22 @@
                     <div class="form-group">
                         <label asp-for="InvoiceItems[@i].ItemName" class="control-label"></label>
                         <input asp-for="InvoiceItems[@i].ItemName" class="form-control input" id="ItemName_@i" />
-                        <span asp-validation-for="InvoiceItems[@i].ItemName" class="text-danger"></span>
+                        <span asp-validation-for="InvoiceItems[@i].ItemName" class="text-warning"></span>
                     </div>
                     <div class="form-group ms-4">
                         <label asp-for="InvoiceItems[@i].Quantity" class="control-label"></label>
                         <input asp-for="InvoiceItems[@i].Quantity" class="form-control quantity-input" id="Quantity_@i" />
-                        <span asp-validation-for="InvoiceItems[@i].Quantity" class="text-danger"></span>
+                        <span asp-validation-for="InvoiceItems[@i].Quantity" class="text-warning"></span>
                     </div>
                     <div class="form-group ms-4">
                         <label asp-for="InvoiceItems[@i].ItemPrice" class="control-label"></label>
                         <input asp-for="InvoiceItems[@i].ItemPrice" class="form-control price-input" id="ItemPrice_@i" />
-                        <span asp-validation-for="InvoiceItems[@i].ItemPrice" class="text-danger"></span>
+                        <span asp-validation-for="InvoiceItems[@i].ItemPrice" class="text-warning"></span>
                     </div>
                     <div class="form-group ms-4">
                         <label asp-for="InvoiceItems[@i].ItemTotal" class="control-label"></label>
                         <input asp-for="InvoiceItems[@i].ItemTotal" class="form-control total-input" id="ItemTotal_@i" readonly />
-                        <span asp-validation-for="InvoiceItems[@i].ItemTotal" class="text-danger"></span>
+                        <span asp-validation-for="InvoiceItems[@i].ItemTotal" class="text-warning"></span>
                     </div>
                 </div>
             }
@@ -87,6 +87,7 @@
             <div class="group">
                 <label asp-for="IssueName"></label><br />
                 <input asp-for="IssueName" class="form-control" id="IssueName" />
+                <span asp-validation-for="IssueName" class="text-danger"></span>
             </div>
             <div class="group">
                 <label asp-for="PaymentTerm"></label><br />
@@ -137,7 +138,7 @@
             </div>
         </div>
     </div>
-    <button type="submit" class="btn btn-primary mt-4 ms-2">Submit</button>
+    <button type="submit" id="submitButton" class="btn btn-primary mt-4 ms-2">Submit</button>
 </form>
 
 @section Scripts {
@@ -146,24 +147,27 @@
 
         document.getElementById('addItemButton').addEventListener('click', function () {
             const itemTemplate = `
-                        <div class="invoice-item d-flex mb-3">
-                            <div class="form-group">
-                                <label asp-for="InvoiceItems[${itemIndex}].ItemName">Item Name</label>
-                                <input name="InvoiceItems[${itemIndex}].ItemName" class="form-control input" id="ItemName_${itemIndex}" />
-                            </div>
-                            <div class="form-group ms-4">
-                                <label asp-for="InvoiceItems[${itemIndex}].Quantity">Quantity</label>
-                                <input name="InvoiceItems[${itemIndex}].Quantity" class="form-control quantity-input" id="Quantity_${itemIndex}" />
-                            </div>
-                            <div class="form-group ms-4">
-                                <label asp-for="InvoiceItems[${itemIndex}].ItemPrice">Item Price</label>
-                                <input name="InvoiceItems[${itemIndex}].ItemPrice" class="form-control price-input" id="ItemPrice_${itemIndex}" />
-                            </div>
-                            <div class="form-group ms-4">
-                                <label asp-for="InvoiceItems[${itemIndex}].ItemTotal">Item Total</label>
-                                <input name="InvoiceItems[${itemIndex}].ItemTotal" class="form-control total-input" id="ItemTotal_${itemIndex}" readonly />
-                            </div>
-                        </div>`;
+                                        <div class="invoice-item d-flex mb-3">
+                                            <div class="form-group">
+                                                <label for="InvoiceItems[${itemIndex}].ItemName">Item Name</label>
+                                                <input name="InvoiceItems[${itemIndex}].ItemName" class="form-control input" id="ItemName_${itemIndex}" />
+                                                <span class="text-danger" id="ItemNameValidation_${itemIndex}"></span>
+                                            </div>
+                                            <div class="form-group ms-4">
+                                                <label for="InvoiceItems[${itemIndex}].Quantity">Quantity</label>
+                                                <input name="InvoiceItems[${itemIndex}].Quantity" class="form-control quantity-input" id="Quantity_${itemIndex}" />
+                                                <span class="text-danger" id="QuantityValidation_${itemIndex}"></span>
+                                            </div>
+                                            <div class="form-group ms-4">
+                                                <label for="InvoiceItems[${itemIndex}].ItemPrice">Item Price</label>
+                                                <input name="InvoiceItems[${itemIndex}].ItemPrice" class="form-control price-input" id="ItemPrice_${itemIndex}" />
+                                                <span class="text-danger" id="ItemPriceValidation_${itemIndex}"></span>
+                                            </div>
+                                            <div class="form-group ms-4">
+                                                <label for="InvoiceItems[${itemIndex}].ItemTotal">Item Total</label>
+                                                <input name="InvoiceItems[${itemIndex}].ItemTotal" class="form-control total-input" id="ItemTotal_${itemIndex}" readonly />
+                                            </div>
+                                        </div>`;
             document.getElementById('invoiceItems').insertAdjacentHTML('beforeend', itemTemplate);
             itemIndex++;
         });
@@ -171,16 +175,45 @@
         // Calculate totals
         document.getElementById('calculateButton').addEventListener('click', function () {
             let subTotal = 0;
+            let validationPassed = true;
 
-            // Calculate ItemTotal for each item
+            // Calculate ItemTotal for each item and validate fields
             document.querySelectorAll('.invoice-item').forEach(function (item, index) {
                 const quantity = parseFloat(item.querySelector(`#Quantity_${index}`).value) || 0;
                 const price = parseFloat(item.querySelector(`#ItemPrice_${index}`).value) || 0;
-                const itemTotal = quantity * price;
+                const itemName = item.querySelector(`#ItemName_${index}`).value;
 
+                // Validate fields
+                if (!itemName) {
+                    validationPassed = false;
+                    document.querySelector(`#ItemNameValidation_${index}`).textContent = "Item Name is required";
+                } else {
+                    document.querySelector(`#ItemNameValidation_${index}`).textContent = "";
+                }
+
+                if (quantity <= 0) {
+                    validationPassed = false;
+                    document.querySelector(`#QuantityValidation_${index}`).textContent = "Quantity is required";
+                } else {
+                    document.querySelector(`#QuantityValidation_${index}`).textContent = "";
+                }
+
+                if (price <= 0) {
+                    validationPassed = false;
+                    document.querySelector(`#ItemPriceValidation_${index}`).textContent = "Item Price is required";
+                } else {
+                    document.querySelector(`#ItemPriceValidation_${index}`).textContent = "";
+                }
+
+                const itemTotal = quantity * price;
                 item.querySelector(`#ItemTotal_${index}`).value = itemTotal.toFixed(2);
                 subTotal += itemTotal;
             });
+
+            if (!validationPassed) {
+                alert("Please check the items.");
+                return;
+            }
 
             // Add Labor Price and Shipping Fee to SubTotal
             const laborPrice = parseFloat(document.getElementById('LaborPrice').value) || 0;
@@ -206,6 +239,15 @@
 
             // Set Payment Status display field
             document.getElementById('PaymentStatus').value = isPaid ? "Paid" : "Not Paid";
+        });
+
+        // Prevent form submission if IssueName is empty
+        document.getElementById('invoiceForm').addEventListener('submit', function (event) {
+            const issueName = document.getElementById('IssueName').value;
+            if (!issueName) {
+                event.preventDefault();
+                alert("Issue Name is required. Please fill it in before submitting.");
+            }
         });
     </script>
 }
