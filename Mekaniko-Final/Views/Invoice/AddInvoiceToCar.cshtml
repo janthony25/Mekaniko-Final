@@ -134,7 +134,7 @@
                     <label asp-for="AmountPaid"></label><br />
                     <input asp-for="AmountPaid" class="form-control" id="AmountPaid" />
                 </div>
-                <button type="button" id="calculateButton" class="btn btn-primary mt-3">Calculate</button>
+               
             </div>
         </div>
     </div>
@@ -147,33 +147,43 @@
 
         document.getElementById('addItemButton').addEventListener('click', function () {
             const itemTemplate = `
-                                        <div class="invoice-item d-flex mb-3">
-                                            <div class="form-group">
-                                                <label for="InvoiceItems[${itemIndex}].ItemName">Item Name</label>
-                                                <input name="InvoiceItems[${itemIndex}].ItemName" class="form-control input" id="ItemName_${itemIndex}" />
-                                                <span class="text-danger" id="ItemNameValidation_${itemIndex}"></span>
-                                            </div>
-                                            <div class="form-group ms-4">
-                                                <label for="InvoiceItems[${itemIndex}].Quantity">Quantity</label>
-                                                <input name="InvoiceItems[${itemIndex}].Quantity" class="form-control quantity-input" id="Quantity_${itemIndex}" />
-                                                <span class="text-danger" id="QuantityValidation_${itemIndex}"></span>
-                                            </div>
-                                            <div class="form-group ms-4">
-                                                <label for="InvoiceItems[${itemIndex}].ItemPrice">Item Price</label>
-                                                <input name="InvoiceItems[${itemIndex}].ItemPrice" class="form-control price-input" id="ItemPrice_${itemIndex}" />
-                                                <span class="text-danger" id="ItemPriceValidation_${itemIndex}"></span>
-                                            </div>
-                                            <div class="form-group ms-4">
-                                                <label for="InvoiceItems[${itemIndex}].ItemTotal">Item Total</label>
-                                                <input name="InvoiceItems[${itemIndex}].ItemTotal" class="form-control total-input" id="ItemTotal_${itemIndex}" readonly />
-                                            </div>
-                                        </div>`;
+                        <div class="invoice-item d-flex mb-3">
+                            <div class="form-group">
+                                <label for="InvoiceItems[${itemIndex}].ItemName">Item Name</label>
+                                <input name="InvoiceItems[${itemIndex}].ItemName" class="form-control input" id="ItemName_${itemIndex}" />
+                                <span class="text-danger" id="ItemNameValidation_${itemIndex}"></span>
+                            </div>
+                            <div class="form-group ms-4">
+                                <label for="InvoiceItems[${itemIndex}].Quantity">Quantity</label>
+                                <input name="InvoiceItems[${itemIndex}].Quantity" class="form-control quantity-input" id="Quantity_${itemIndex}" />
+                                <span class="text-danger" id="QuantityValidation_${itemIndex}"></span>
+                            </div>
+                            <div class="form-group ms-4">
+                                <label for="InvoiceItems[${itemIndex}].ItemPrice">Item Price</label>
+                                <input name="InvoiceItems[${itemIndex}].ItemPrice" class="form-control price-input" id="ItemPrice_${itemIndex}" />
+                                <span class="text-danger" id="ItemPriceValidation_${itemIndex}"></span>
+                            </div>
+                            <div class="form-group ms-4">
+                                <label for="InvoiceItems[${itemIndex}].ItemTotal">Item Total</label>
+                                <input name="InvoiceItems[${itemIndex}].ItemTotal" class="form-control total-input" id="ItemTotal_${itemIndex}" readonly />
+                            </div>
+                        </div>`;
             document.getElementById('invoiceItems').insertAdjacentHTML('beforeend', itemTemplate);
+            addEventListenersToItem(itemIndex);
             itemIndex++;
         });
 
-        // Calculate totals
-        document.getElementById('calculateButton').addEventListener('click', function () {
+        function addEventListenersToItem(index) {
+            document.getElementById(`Quantity_${index}`).addEventListener('input', calculateTotals);
+            document.getElementById(`ItemPrice_${index}`).addEventListener('input', calculateTotals);
+        }
+
+        document.getElementById('LaborPrice').addEventListener('input', calculateTotals);
+        document.getElementById('ShippingFee').addEventListener('input', calculateTotals);
+        document.getElementById('Discount').addEventListener('input', calculateTotals);
+        document.getElementById('AmountPaid').addEventListener('input', calculateTotals);
+
+        function calculateTotals() {
             let subTotal = 0;
             let validationPassed = true;
 
@@ -210,12 +220,7 @@
                 subTotal += itemTotal;
             });
 
-            if (!validationPassed) {
-                alert("Please check the items.");
-                return;
-            }
-
-            // Add Labor Price and Shipping Fee to SubTotal
+            // If no items are present, we still calculate SubTotal based on LaborPrice and ShippingFee
             const laborPrice = parseFloat(document.getElementById('LaborPrice').value) || 0;
             const shippingFee = parseFloat(document.getElementById('ShippingFee').value) || 0;
             subTotal += laborPrice + shippingFee;
@@ -239,15 +244,31 @@
 
             // Set Payment Status display field
             document.getElementById('PaymentStatus').value = isPaid ? "Paid" : "Not Paid";
-        });
 
-        // Prevent form submission if IssueName is empty
+            return validationPassed;
+        }
+
+        // Add event listeners to initial items
+        for (let i = 0; i < itemIndex; i++) {
+            addEventListenersToItem(i);
+        }
+
+        // Prevent form submission if IssueName or item list fields are empty
         document.getElementById('invoiceForm').addEventListener('submit', function (event) {
             const issueName = document.getElementById('IssueName').value;
             if (!issueName) {
                 event.preventDefault();
                 alert("Issue Name is required. Please fill it in before submitting.");
+                return;
+            }
+
+            if (!calculateTotals()) {
+                event.preventDefault();
+                alert("Please make sure all item fields are correctly filled before submitting.");
             }
         });
+
+        // Initial calculation in case there are no items yet
+        calculateTotals();
     </script>
 }

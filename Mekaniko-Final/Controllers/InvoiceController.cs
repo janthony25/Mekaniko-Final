@@ -96,5 +96,26 @@ namespace Mekaniko_Final.Controllers
 
             return View(model);
         }
+
+        // POST - Update Invoice Details
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateInvoiceDetails(UpdateCarInvoiceDto model)
+        {
+            if (ModelState.IsValid)
+            {
+                Console.WriteLine("Invoice Items:");
+                foreach (var item in model.InvoiceItems)
+                {
+                    Console.WriteLine($"Item Name: {item.ItemName}, InvoiceItemId: {item.InvoiceItemId}");
+                }
+
+                await _invoiceRepository.UpdateInvoiceAsync(model);
+                return RedirectToAction("GetCarInvoiceSummary", "Car", new { id = model.CarId });
+            }
+
+            return View(model);
+        }
+
     }
 }

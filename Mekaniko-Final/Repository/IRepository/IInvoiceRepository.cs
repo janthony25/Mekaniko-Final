@@ -6,5 +6,6 @@ namespace Mekaniko_Final.Repository.IRepository
     {
         Task AddInvoiceToCarAsync(AddInvoiceToCarDto dto);
         Task<InvoiceDetailsDto> GetInvoiceDetailsByIdAsync(int id);
+        Task UpdateInvoiceAsync(UpdateCarInvoiceDto dto);
     }
 }

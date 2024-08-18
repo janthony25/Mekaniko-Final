@@ -114,5 +114,68 @@ namespace Mekaniko_Final.Repository
 
             return invoiceDetails;
         }
+
+        public async Task UpdateInvoiceAsync(UpdateCarInvoiceDto dto)
+        {
+            var invoice = await _data.Invoices
+                .Include(i => i.InvoiceItem)
+                .FirstOrDefaultAsync(i => i.InvoiceId == dto.InvoiceId);
+
+            if (invoice == null)
+            {
+                throw new ArgumentException("Invalid InvoiceId");
+            }
+
+            // Update invoice details
+            invoice.DateAdded = dto.DateAdded;
+            invoice.DueDate = dto.DueDate;
+            invoice.IssueName = dto.IssueName;
+            invoice.PaymentTerm = dto.PaymentTerm;
+            invoice.Notes = dto.Notes;
+            invoice.LaborPrice = dto.LaborPrice;
+            invoice.Discount = dto.Discount;
+            invoice.ShippingFee = dto.ShippingFee;
+            invoice.SubTotal = dto.SubTotal;
+            invoice.TotalAmount = dto.TotalAmount;
+            invoice.AmountPaid = dto.AmountPaid;
+            invoice.IsPaid = dto.IsPaid;
+
+            // Update existing items and add new items
+            foreach (var itemDto in dto.InvoiceItems)
+            {
+                if (itemDto.InvoiceItemId > 0)
+                {
+                    // Update existing item
+                    var existingItem = invoice.InvoiceItem
+                        .FirstOrDefault(ii => ii.InvoiceItemId == itemDto.InvoiceItemId);
+
+                    if (existingItem != null)
+                    {
+                        existingItem.ItemName = itemDto.ItemName;
+                        existingItem.Quantity = itemDto.Quantity;
+                        existingItem.ItemPrice = itemDto.ItemPrice;
+                        existingItem.ItemTotal = itemDto.ItemTotal;
+                    }
+                }
+                else
+                {
+                    // Add new item
+                    var newItem = new InvoiceItem
+                    {
+                        ItemName = itemDto.ItemName,
+                        Quantity = itemDto.Quantity,
+                        ItemPrice = itemDto.ItemPrice,
+                        ItemTotal = itemDto.ItemTotal,
+                        InvoiceId = invoice.InvoiceId // Set the correct InvoiceId
+                    };
+                    _data.InvoiceItems.Add(newItem);
+                }
+            }
+
+            // Save changes to the database
+            await _data.SaveChangesAsync();
+        }
+
+
     }
 }
